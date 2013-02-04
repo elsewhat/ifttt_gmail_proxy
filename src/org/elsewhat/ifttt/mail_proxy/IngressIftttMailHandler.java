@@ -26,23 +26,23 @@ import org.elsewhat.ifttt.mail_proxy.util.MailUtils;
  * @author dagfinn.parnas
  *
  */
-public class GmailVerificationMailHandler {
-	private static final Logger log = Logger.getLogger(GmailVerificationMailHandler.class.getName());
+public class IngressIftttMailHandler {
+	private static final Logger log = Logger.getLogger(IngressIftttMailHandler.class.getName());
 	
-	public static final String GMAIL_FORWARDING_EMAIL_FROM = "mail-noreply@google.com";
-	//public static final String GMAIL_FORWARDING_EMAIL_FROM = "dagfinn.parnas@bouvet.no";
-	public static final String GMAIL_FORWARDING_SUBJECT= "Gmail Forwarding Confirmation";
+	public static final String INGRESS_SUBJECT= "[Ingress Resistance Norway]";
 	
-	public static final String REPLY_FROM = "mail-noreply@elsewhat-iftttgmailproxy.appspotmail.com";
+	public static final String REPLY_FROM = "ifttt@elsewhat-iftttgmailproxy.appspotmail.com";
+	public static final String IFTTT_TO = "trigger@ifttt.com";
+
+	public static final String IFTTT_HASHTAG = "#GPLUSINGRESS";
+	
 	
 	
 	public boolean canHandleEmail(MimeMessage message) throws MessagingException{
 		InternetAddress emailSender = MailUtils.getSender(message);
 		String subject = message.getSubject();
 		
-		if(GMAIL_FORWARDING_EMAIL_FROM.equalsIgnoreCase(emailSender.getAddress())
-				&& subject.contains(GMAIL_FORWARDING_SUBJECT)){
-			
+		if(subject.contains(INGRESS_SUBJECT)){	
 			return true;
 		}else {
 			//log.warning("Cannot handle email from sender " + emailSender.getAddress() + " and subject " + message.getSubject());
@@ -62,19 +62,8 @@ public class GmailVerificationMailHandler {
 		Object objectContent = message.getContent();
 		
 		
-		log.info("Mail from " + emailFrom + " subject "+subject + " contenttype "+contentType + " content:"+objectContent);
-		
-		String emailForVerification = findGmailFromContent((String)objectContent);
-		InternetAddress replyEmailTo=null;
-		try {
-			replyEmailTo= new InternetAddress(emailForVerification);
-			log.info("Found valid reference to "+emailForVerification );
-		}catch(AddressException e){
-			log.log(Level.WARNING, "Could not get valid email address from content. Tried to use " + emailForVerification, e);
-			return false;
-		}
-		
-		String content = (String)objectContent;
+		//log.info("Mail from " + emailFrom + " subject "+subject + " contenttype "+contentType + " content:"+objectContent);
+
 		
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
@@ -85,34 +74,24 @@ public class GmailVerificationMailHandler {
             msg.setFrom(new InternetAddress(REPLY_FROM, "Elsewhat IFTTT GMail proxy"));
             
             msg.addRecipient(Message.RecipientType.TO,
-            				 replyEmailTo);
-            msg.setSubject("iftttgmailproxy - " + subject);
-            msg.setText(content);
+            		new InternetAddress(IFTTT_TO, "IFTTT"));
+            
+            msg.setSubject(IFTTT_HASHTAG + " "+ subject);
+            msg.setContent(objectContent, contentType);
             Transport.send(msg);
             
-            log.info("Sending email to " + replyEmailTo);
+            log.info("Sending email to " + IFTTT_TO);
             return true;
             
         } catch (AddressException e) {
-        	log.log(Level.WARNING, "Could not send email to " + replyEmailTo, e);
+        	log.log(Level.WARNING, "Could not send email to " + IFTTT_TO, e);
         } catch (MessagingException e) {
-        	log.log(Level.WARNING, "Could not send email to " + replyEmailTo, e);
+        	log.log(Level.WARNING, "Could not send email to " + IFTTT_TO, e);
         	
         }
         return false;
 		
 	}
-
-	private String findGmailFromContent(String content) {
-		StringTokenizer tokenizer = new StringTokenizer(content);
-		if(tokenizer.hasMoreTokens()){
-			String token = tokenizer.nextToken();
-			return token;
-		}
-		
-		// TODO Auto-generated method stub
-		return null;
-	}	
 	
 
 	

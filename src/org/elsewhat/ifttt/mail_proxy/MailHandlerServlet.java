@@ -43,16 +43,23 @@ public class MailHandlerServlet extends HttpServlet {
         	MimeMessage message = new MimeMessage(session, req.getInputStream());
 			
         	GmailVerificationMailHandler gmailVerificationMailHandler = new GmailVerificationMailHandler();
+        	IftttVerificationMailHandler iftttVerificationMailHandler = new IftttVerificationMailHandler();
+        	IngressIftttMailHandler ingressIftttMailHandler = new IngressIftttMailHandler();
+        	
 			if(gmailVerificationMailHandler.canHandleEmail(message)){
 				gmailVerificationMailHandler.handleEmail(message);
+			}else if (iftttVerificationMailHandler.canHandleEmail(message)) {
+				iftttVerificationMailHandler.handleEmail(message);
+			}else if (ingressIftttMailHandler.canHandleEmail(message)) {
+				ingressIftttMailHandler.handleEmail(message);
 			}else {
-				
+				log.warning("No handlers for message " + message.getFrom()+ " subject "+message.getSubject());
 			}
         	
         	
 			
 			
-			log.warning("Mail from " + message.getFrom()+ " subject "+message.getSubject());
+			
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			log.log(Level.WARNING, "Exception thrown while reading email", e);
