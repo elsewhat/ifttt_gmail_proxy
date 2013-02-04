@@ -43,8 +43,13 @@ public class MailHandlerServlet extends HttpServlet {
         	MimeMessage message = new MimeMessage(session, req.getInputStream());
 			
         	GmailVerificationMailHandler gmailVerificationMailHandler = new GmailVerificationMailHandler();
-			
-        	gmailVerificationMailHandler.handleEmail(message);
+			if(gmailVerificationMailHandler.canHandleEmail(message)){
+				gmailVerificationMailHandler.handleEmail(message);
+			}else {
+				
+			}
+        	
+        	
 			
 			
 			log.warning("Mail from " + message.getFrom()+ " subject "+message.getSubject());

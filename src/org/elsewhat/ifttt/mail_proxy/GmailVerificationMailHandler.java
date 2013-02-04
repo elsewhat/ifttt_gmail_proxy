@@ -17,11 +17,21 @@ import javax.mail.internet.MimeMessage;
 
 import org.elsewhat.ifttt.mail_proxy.util.MailUtils;
 
+/**
+ * Handle incoming messages from gmail for verifying an forwarding email addresse
+ * 
+ * End-result should be an email back to the gmail account with the verification code
+ * 
+ * 
+ * @author dagfinn.parnas
+ *
+ */
 public class GmailVerificationMailHandler {
 	private static final Logger log = Logger.getLogger(GmailVerificationMailHandler.class.getName());
 	
 	public static final String GMAIL_FORWARDING_EMAIL_FROM = "mail-noreply@google.com";
-	public static final String GMAIL_FORWARDING_SUBJECT= "Gmail Forwading Confirmation";
+	//public static final String GMAIL_FORWARDING_EMAIL_FROM = "dagfinn.parnas@bouvet.no";
+	public static final String GMAIL_FORWARDING_SUBJECT= "Gmail Forwarding Confirmation";
 	
 	public static final String REPLY_FROM = "mail-noreply@elsewhat-iftttgmailproxy.appspotmail.com";
 	
@@ -32,8 +42,10 @@ public class GmailVerificationMailHandler {
 		
 		if(GMAIL_FORWARDING_EMAIL_FROM.equalsIgnoreCase(emailSender.getAddress())
 				&& subject.contains(GMAIL_FORWARDING_SUBJECT)){
+			
 			return true;
 		}else {
+			log.warning("Cannot handle email from sender " + emailSender.getAddress() + " and subject " + message.getSubject());
 			return false;
 		}	
 	}
@@ -44,6 +56,7 @@ public class GmailVerificationMailHandler {
 			return false;
 		}
 		InternetAddress emailFrom = MailUtils.getSender(message);
+		
 		String subject = message.getSubject();
 		String contentType = message.getContentType();
 		Object objectContent = message.getContent();
